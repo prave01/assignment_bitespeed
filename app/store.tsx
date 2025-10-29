@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type Message = {
+  id: string;
   name: string;
   data: string;
 };
@@ -9,7 +10,7 @@ type Message = {
 type SequenceType = {
   sequence: number;
   nodes: Message[];
-  edges: { source: string; target: string }[];
+  edges: { id: string; source: string; target: string }[];
 };
 
 type MessagesType = {
@@ -20,6 +21,11 @@ type MessagesType = {
 type SequencesType = {
   sequences: SequenceType[];
   setSequences: (buffer: SequenceType[]) => void;
+};
+
+type CurrentSequenceType = {
+  currentSequence: SequenceType | null;
+  setCurrentSequence: (buffer: SequenceType) => void;
 };
 
 const useMessages = create<MessagesType>()(
@@ -46,4 +52,16 @@ const useSequences = create<SequencesType>()(
   ),
 );
 
-export { useMessages, useSequences };
+const useCurrentSequence = create<CurrentSequenceType>()(
+  persist(
+    (set) => ({
+      currentSequence: null,
+      setCurrentSequence: (buffer) => set({ currentSequence: buffer }),
+    }),
+    {
+      name: "current-sequence",
+    },
+  ),
+);
+
+export { useMessages, useSequences, useCurrentSequence };

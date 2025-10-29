@@ -2,9 +2,9 @@
 
 import ReactFlowPlane from "@/components/templates/ReactFlow";
 import { Button } from "@/components/ui/button";
-import { useReactFlow } from "@xyflow/react";
+import { type Edge, useReactFlow, type Node } from "@xyflow/react";
 import { FormEvent, useState } from "react";
-import { useMessages, useSequences } from "./store";
+import { useCurrentSequence, useMessages, useSequences } from "./store";
 
 export default function Home() {
   const { addNodes, getEdges, getNodes } = useReactFlow();
@@ -18,6 +18,8 @@ export default function Home() {
 
   const setSequences = useSequences((s) => s.setSequences);
   const sequences = useSequences((s) => s.sequences);
+
+  const setCurrentSequence = useCurrentSequence((s) => s.setCurrentSequence);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,22 +42,34 @@ export default function Home() {
   };
 
   const handleSave = () => {
-    const edges = getEdges();
-    const nodes = getNodes();
-    console.log(nodes);
+    const edges: Edge[] = getEdges();
+    const nodes: Node[] = getNodes();
+
     if (
-      messages.length > 0 &&
+      nodes.length > 0 &&
       edges.length > 0 &&
-      messages.length - 1 === edges.length
+      nodes.length - 1 === edges.length
     ) {
-      // setSequences([
-      //   ...sequences,
-      //   {
-      //     edges: edges,
-      //     nodes: nodes,
-      //     sequence: sequences.length + 1,
-      //   },
-      // ]);
+      setSequences([
+        ...sequences,
+        {
+          edges: edges.map((i) => {
+            return {
+              id: i.id,
+              source: i.source,
+              target: i.target,
+            };
+          }),
+          nodes: nodes.map((i) => {
+            return {
+              id: i.id,
+              name: i.data?.name as string,
+              data: i.data?.message as string,
+            };
+          }),
+          sequence: sequences.length + 1,
+        },
+      ]);
       console.log("Done saving");
     } else {
       console.log("Something is left over");
@@ -123,6 +137,28 @@ export default function Home() {
             </Button>
           </form>
         )}
+        <div className="bg-muted border-1 rounded-lg flex-1 p-2">
+          <span className="text-xl font-semibold">Saved sequences</span>
+          <div className="flex flex-col gap-2 mt-4 items-center justify-center">
+            {sequences.map((i, idx) => (
+              <Button
+                onClick={() => {
+                  setCurrentSequence({
+                    edges: i.edges,
+                    nodes: i.nodes,
+                    sequence: i.sequence,
+                  });
+                }}
+                key={idx}
+                className="w-[200px] cursor-pointer bg-primary flex rounded-lg
+                  px-2 py-1 items-center justify-center text-white
+                  dark:text-black"
+              >
+                {i.sequence}
+              </Button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

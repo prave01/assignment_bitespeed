@@ -6,7 +6,7 @@ import {
   OnNodesChange,
   applyNodeChanges,
   OnEdgesChange,
-  Edge,
+  type Edge,
   addEdge,
   OnConnect,
   applyEdgeChanges,
@@ -16,7 +16,7 @@ import "@xyflow/react/dist/style.css";
 import { useCallback, useEffect, useState } from "react";
 import { SendMessageNode } from "../molecules/SendMessageNode";
 import { ThemeButton } from "../atoms/ThemeButton";
-import { useMessages } from "@/app/store";
+import { useCurrentSequence, useSequences } from "@/app/store";
 
 const defaultEdgeOptions: DefaultEdgeOptions = {
   animated: true,
@@ -33,6 +33,8 @@ export default function ReactFlowPlane() {
 
   const [edges, setEdges] = useState<Edge[]>([]);
 
+  const currentSequence = useCurrentSequence((s) => s.currentSequence);
+
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     [setNodes],
@@ -48,32 +50,45 @@ export default function ReactFlowPlane() {
     [setEdges],
   );
 
-  const messages = useMessages((s) => s.message);
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    for (var i of messages) {
-      if (i.data && i.data) {
-        setNodes((prev) => [
-          ...prev,
-          {
-            id: i.name,
-            data: {
-              name: i.name,
-              message: i.data,
-            },
-            type: "sendMessage",
-            position: {
-              x: 100,
-              y: 20,
-            },
+    const nodes: Node[] =
+      currentSequence?.nodes.map((i) => {
+        return {
+          id: i.name as string,
+          data: {
+            name: i.name as string,
+            message: i.data as string,
           },
-        ]);
-      }
+          type: "sendMessage",
+          position: {
+            x: 100,
+            y: 50,
+          },
+        };
+      }) || [];
+    const edges: Edge[] =
+      currentSequence?.edges.map((i) => {
+        return {
+          id: "s",
+          source: i.source,
+          target: i.target,
+        };
+      }) || [];
+
+    if (edges.length > 0 && nodes.length > 0) {
+      console.log(nodes);
+      console.log(edges);
+      setNodes(nodes);
+      setEdges(edges);
+      console.log("Updated with current");
+      return;
     }
-  }, [messages]);
+    console.log("Failed to update");
+  }, [currentSequence]);
 
   return (
     <div
