@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { ReactFlowProvider } from "@xyflow/react";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ReactFlowProvider>{children}</ReactFlowProvider>
+          <ReactFlowProvider>
+            <Toaster closeButton />
+            {children}
+          </ReactFlowProvider>
         </ThemeProvider>
       </body>
     </html>

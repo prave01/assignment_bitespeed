@@ -55,40 +55,46 @@ export default function ReactFlowPlane() {
   }, []);
 
   useEffect(() => {
-    const nodes: Node[] =
-      currentSequence?.nodes.map((i) => {
-        return {
-          id: i.name as string,
-          data: {
-            name: i.name as string,
-            message: i.data as string,
-          },
-          type: "sendMessage",
-          position: {
-            x: 100,
-            y: 50,
-          },
-        };
-      }) || [];
-    const edges: Edge[] =
-      currentSequence?.edges.map((i) => {
-        return {
-          id: "s",
-          source: i.source,
-          target: i.target,
-        };
-      }) || [];
+    if (currentSequence) {
+      const nodes: Node[] =
+        currentSequence?.nodes.map((i) => {
+          return {
+            id: i.id as string,
+            data: {
+              name: i.name as string,
+              message: i.data as string,
+            },
+            type: "sendMessage",
+            position: {
+              x: i.position.x,
+              y: i.position.y,
+            },
+          };
+        }) || [];
+      const edges: Edge[] =
+        currentSequence?.edges.map((i) => {
+          return {
+            id: i.id,
+            source: i.source,
+            target: i.target,
+          };
+        }) || [];
 
-    if (edges.length > 0 && nodes.length > 0) {
-      console.log(nodes);
-      console.log(edges);
-      setNodes(nodes);
-      setEdges(edges);
-      console.log("Updated with current");
-      return;
+      if (edges.length > 0 && nodes.length > 0) {
+        console.log(nodes);
+        console.log(edges);
+        setNodes(nodes);
+        setEdges(edges);
+        console.log("Updated with current");
+        return;
+      }
+      console.log("Failed to update");
+    } else {
+      console.log("in");
+      setNodes([]);
+      setEdges([]);
     }
-    console.log("Failed to update");
-  }, [currentSequence]);
+  }, [currentSequence, currentSequence?.edges, currentSequence?.nodes]);
 
   return (
     <div
